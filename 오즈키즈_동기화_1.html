@@ -1,0 +1,917 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>오즈키즈 × 노션 동기화</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;600;700;800&display=swap');
+
+  :root {
+    --bg: #f4f3f0;
+    --surface: #ffffff;
+    --surface2: #f8f7f5;
+    --border: #e8e6e1;
+    --border2: #dddad4;
+    --text: #1a1916;
+    --text2: #6b6860;
+    --text3: #a8a49c;
+    --accent: #e5392a;
+    --accent-light: #fff1f0;
+    --accent-glow: rgba(229,57,42,0.10);
+    --accent2: #f0522a;
+    --green: #16a34a;
+    --green-bg: #f0fdf4;
+    --green-border: #bbf7d0;
+    --red: #dc2626;
+    --red-bg: #fef2f2;
+    --red-border: #fecaca;
+    --yellow: #d97706;
+    --yellow-bg: #fffbeb;
+    --yellow-border: #fde68a;
+    --blue: #2563eb;
+    --shadow-sm: 0 1px 3px rgba(0,0,0,0.06), 0 1px 2px rgba(0,0,0,0.04);
+    --shadow: 0 4px 16px rgba(0,0,0,0.06), 0 2px 6px rgba(0,0,0,0.04);
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    font-family: 'Noto Sans KR', -apple-system, sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    min-height: 100vh;
+    font-size: 14px;
+    line-height: 1.5;
+  }
+
+  /* ── 헤더 ── */
+  .header {
+    background: white;
+    border-bottom: 1px solid var(--border);
+    padding: 0 32px;
+    height: 58px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    position: sticky;
+    top: 0;
+    z-index: 100;
+    box-shadow: var(--shadow-sm);
+  }
+  .logo {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-weight: 700;
+    font-size: 15px;
+    color: var(--text);
+    letter-spacing: -0.3px;
+  }
+  .logo-icon {
+    width: 30px; height: 30px;
+    background: linear-gradient(135deg, var(--accent), #ff6b55);
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 2px 8px rgba(229,57,42,0.22);
+  }
+  .logo-icon svg { color: white; }
+  .logo-sep { color: var(--text3); font-weight: 300; margin: 0 2px; }
+
+  .header-center { display: flex; align-items: center; gap: 8px; }
+  .header-badge {
+    background: var(--accent-light);
+    color: var(--accent);
+    padding: 3px 10px;
+    border-radius: 6px;
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 0.5px;
+    text-transform: uppercase;
+  }
+
+  .status-pill {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    background: var(--green-bg);
+    border: 1px solid var(--green-border);
+    color: var(--green);
+    padding: 5px 12px;
+    border-radius: 20px;
+    font-size: 12px;
+    font-weight: 600;
+  }
+  .status-dot {
+    width: 6px; height: 6px;
+    background: var(--green);
+    border-radius: 50%;
+    animation: pdot 2s infinite;
+  }
+  @keyframes pdot {
+    0%,100%{ opacity:1; transform:scale(1); }
+    50%{ opacity:0.4; transform:scale(0.75); }
+  }
+
+  /* ── 알림 배너 ── */
+  .alert-banner {
+    margin: 20px 32px 0;
+    background: var(--yellow-bg);
+    border: 1px solid var(--yellow-border);
+    border-radius: 10px;
+    padding: 12px 16px;
+    display: flex;
+    align-items: flex-start;
+    gap: 10px;
+    color: var(--yellow);
+    font-size: 13px;
+  }
+  .alert-banner.hidden { display: none; }
+  .alert-banner svg { flex-shrink: 0; margin-top: 1px; }
+
+  /* ── 레이아웃 ── */
+  .layout {
+    max-width: 1160px;
+    margin: 0 auto;
+    padding: 24px 32px 40px;
+    display: grid;
+    grid-template-columns: 310px 1fr;
+    gap: 18px;
+  }
+  .left-col { display: flex; flex-direction: column; gap: 16px; }
+
+  /* ── 카드 ── */
+  .card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    overflow: hidden;
+    box-shadow: var(--shadow-sm);
+  }
+  .card-header {
+    padding: 14px 18px;
+    border-bottom: 1px solid var(--border);
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+  .card-icon {
+    width: 32px; height: 32px;
+    background: var(--surface2);
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--accent);
+    border: 1px solid var(--border);
+    flex-shrink: 0;
+  }
+  .card-title { font-size: 13px; font-weight: 600; }
+  .card-sub { font-size: 11px; color: var(--text3); margin-top: 1px; }
+  .card-body { padding: 18px; }
+
+  /* ── 필드 ── */
+  .field { margin-bottom: 13px; }
+  .field:last-of-type { margin-bottom: 0; }
+  .label {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    font-size: 11px;
+    font-weight: 700;
+    color: var(--text2);
+    letter-spacing: 0.5px;
+    text-transform: uppercase;
+    margin-bottom: 6px;
+  }
+  .label svg { color: var(--text3); }
+  .input {
+    width: 100%;
+    background: var(--surface2);
+    border: 1.5px solid var(--border);
+    border-radius: 9px;
+    padding: 9px 12px;
+    font-size: 13px;
+    font-family: inherit;
+    color: var(--text);
+    outline: none;
+    transition: border-color 0.15s, box-shadow 0.15s, background 0.15s;
+  }
+  .input::placeholder { color: var(--text3); }
+  .input:focus {
+    border-color: var(--accent);
+    box-shadow: 0 0 0 3px var(--accent-glow);
+    background: white;
+  }
+  .hint {
+    font-size: 11px;
+    color: var(--text3);
+    margin-top: 4px;
+    display: flex;
+    align-items: center;
+    gap: 4px;
+  }
+
+  /* ── 저장 버튼 ── */
+  .save-btn {
+    width: 100%;
+    margin-top: 14px;
+    padding: 10px 16px;
+    background: var(--surface2);
+    border: 1.5px solid var(--border2);
+    border-radius: 9px;
+    color: var(--text2);
+    font-size: 13px;
+    font-weight: 600;
+    font-family: inherit;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 7px;
+    transition: all 0.15s;
+  }
+  .save-btn:hover { background: var(--border); color: var(--text); border-color: var(--border2); }
+  .save-btn.saved {
+    background: var(--green-bg);
+    border-color: var(--green-border);
+    color: var(--green);
+  }
+
+  /* ── 통계 ── */
+  .stats {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
+    padding: 14px 16px;
+    border-bottom: 1px solid var(--border);
+  }
+  .stat {
+    background: var(--surface2);
+    border-radius: 10px;
+    padding: 11px 13px;
+    border: 1px solid var(--border);
+  }
+  .stat-lbl { font-size: 11px; color: var(--text3); display: flex; align-items: center; gap: 4px; margin-bottom: 4px; }
+  .stat-val { font-size: 22px; font-weight: 700; line-height: 1; }
+  .stat-val.accent { color: var(--accent); font-size: 13px; font-weight: 600; margin-top: 3px; }
+  .stat-val.green { color: var(--green); }
+  .stat-sub { font-size: 11px; color: var(--text3); margin-top: 2px; }
+
+  /* ── 동기화 버튼 ── */
+  .sync-area { padding: 14px 16px 16px; }
+  .sync-btn {
+    width: 100%;
+    padding: 13px 20px;
+    background: linear-gradient(135deg, var(--accent) 0%, #ff5a3d 100%);
+    border: none;
+    border-radius: 11px;
+    color: white;
+    font-size: 14px;
+    font-weight: 700;
+    font-family: inherit;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    transition: all 0.2s;
+    letter-spacing: -0.2px;
+    box-shadow: 0 2px 12px rgba(229,57,42,0.18);
+  }
+  .sync-btn:hover:not(:disabled) {
+    transform: translateY(-1px);
+    box-shadow: 0 6px 20px rgba(229,57,42,0.25);
+  }
+  .sync-btn:active:not(:disabled) { transform: translateY(0); }
+  .sync-btn:disabled {
+    background: var(--border);
+    color: var(--text3);
+    cursor: not-allowed;
+    box-shadow: none;
+    transform: none;
+  }
+  .sync-btn.running {
+    background: linear-gradient(135deg, #f59e0b, #f97316);
+    box-shadow: 0 2px 12px rgba(245,158,11,0.25);
+  }
+
+  .spin { display: none; animation: spin 0.7s linear infinite; }
+  .spin.show { display: block; }
+  .icon-static { display: block; }
+  .icon-static.hide { display: none; }
+  @keyframes spin { to { transform: rotate(360deg); } }
+
+  /* ── 결과 뱃지 ── */
+  .badge {
+    margin-top: 10px;
+    padding: 8px 13px;
+    border-radius: 8px;
+    font-size: 13px;
+    font-weight: 600;
+    display: flex;
+    align-items: center;
+    gap: 7px;
+  }
+  .badge.ok { background: var(--green-bg); border: 1px solid var(--green-border); color: var(--green); }
+  .badge.err { background: var(--red-bg); border: 1px solid var(--red-border); color: var(--red); }
+  .badge.run { background: var(--yellow-bg); border: 1px solid var(--yellow-border); color: var(--yellow); }
+
+  /* ── 진행바 ── */
+  .prog-wrap { margin: 0 16px 14px; display: none; }
+  .prog-wrap.show { display: block; }
+  .prog-lbl { display: flex; justify-content: space-between; font-size: 11px; color: var(--text3); margin-bottom: 5px; }
+  .prog-track { height: 4px; background: var(--border); border-radius: 4px; overflow: hidden; }
+  .prog-fill {
+    height: 100%;
+    background: linear-gradient(90deg, var(--accent), #ff6b55);
+    border-radius: 4px;
+    transition: width 0.3s ease;
+    width: 0%;
+  }
+
+  /* ── 우측 패널 ── */
+  .right-col { display: flex; flex-direction: column; gap: 16px; }
+
+  /* ── 로그 박스 ── */
+  .log-box {
+    margin: 0 16px 16px;
+    background: #fafaf8;
+    border: 1.5px solid var(--border);
+    border-radius: 10px;
+    padding: 14px 16px;
+    height: 255px;
+    overflow-y: auto;
+    font-family: 'SF Mono', 'Fira Code', 'Courier New', monospace;
+    font-size: 12px;
+    line-height: 1.85;
+  }
+  .log-box::-webkit-scrollbar { width: 4px; }
+  .log-box::-webkit-scrollbar-thumb { background: var(--border2); border-radius: 4px; }
+
+  .l-empty { color: var(--text3); font-style: italic; }
+  .l { color: var(--text2); }
+  .l-ok { color: #16a34a; }
+  .l-err { color: #dc2626; }
+  .l-warn { color: #d97706; }
+  .l-info { color: #2563eb; }
+  .l-head { color: var(--text); font-weight: 700; }
+  .l-ts { color: var(--text3); margin-right: 6px; font-size: 11px; }
+
+  /* ── 결과 리스트 ── */
+  .result-list { padding: 0 14px 14px; max-height: 285px; overflow-y: auto; }
+  .result-list::-webkit-scrollbar { width: 4px; }
+  .result-list::-webkit-scrollbar-thumb { background: var(--border2); border-radius: 4px; }
+
+  .r-empty {
+    text-align: center;
+    color: var(--text3);
+    font-size: 13px;
+    padding: 28px 0;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 8px;
+  }
+  .r-item {
+    display: flex;
+    align-items: center;
+    gap: 9px;
+    padding: 8px 10px;
+    border-radius: 8px;
+    margin-bottom: 3px;
+    transition: background 0.1s;
+    cursor: default;
+  }
+  .r-item:hover { background: var(--surface2); }
+  .r-icon {
+    width: 26px; height: 26px;
+    border-radius: 7px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+  }
+  .r-icon.ok { background: var(--green-bg); color: var(--green); border: 1px solid var(--green-border); }
+  .r-icon.fail { background: var(--red-bg); color: var(--red); border: 1px solid var(--red-border); }
+  .r-icon.skip { background: var(--surface2); color: var(--text3); border: 1px solid var(--border); }
+  .r-name { flex: 1; font-size: 13px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .r-notion { font-size: 11px; color: var(--text3); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 130px; }
+  .r-tag {
+    font-size: 11px;
+    font-weight: 600;
+    padding: 2px 8px;
+    border-radius: 5px;
+    flex-shrink: 0;
+  }
+  .r-tag.ok { background: var(--green-bg); color: var(--green); border: 1px solid var(--green-border); }
+  .r-tag.fail { background: var(--red-bg); color: var(--red); border: 1px solid var(--red-border); }
+  .r-tag.skip { background: var(--surface2); color: var(--text3); border: 1px solid var(--border); }
+
+  @media (max-width: 860px) {
+    .layout { grid-template-columns: 1fr; padding: 16px; }
+    .header { padding: 0 16px; }
+    .alert-banner { margin: 12px 16px 0; }
+  }
+</style>
+</head>
+<body>
+
+<!-- 헤더 -->
+<header class="header">
+  <div style="display:flex;align-items:center;gap:14px;">
+    <div class="logo">
+      <div class="logo-icon">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+          <path d="M12 2L2 7l10 5 10-5-10-5z"/>
+          <path d="M2 17l10 5 10-5"/>
+          <path d="M2 12l10 5 10-5"/>
+        </svg>
+      </div>
+      오즈키즈 <span class="logo-sep">×</span> 노션
+    </div>
+    <span class="header-badge">Product Design</span>
+  </div>
+  <div class="status-pill">
+    <div class="status-dot"></div>
+    자동 감시 중
+  </div>
+</header>
+
+<!-- 설정 알림 -->
+<div class="alert-banner" id="setupBanner">
+  <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+    <circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/>
+  </svg>
+  노션 API 토큰과 DB ID를 설정해주세요. 저장하면 브라우저에 자동으로 기억돼요.
+</div>
+
+<div class="layout">
+
+  <!-- ── 좌측 ── -->
+  <div class="left-col">
+
+    <!-- 연결 설정 -->
+    <div class="card" id="settingCard">
+      <div class="card-header">
+        <div class="card-icon">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <circle cx="12" cy="12" r="3"/>
+            <path d="M19.07 4.93a10 10 0 0 1 0 14.14"/>
+            <path d="M4.93 4.93a10 10 0 0 0 0 14.14"/>
+          </svg>
+        </div>
+        <div>
+          <div class="card-title">연결 설정</div>
+          <div class="card-sub">노션 API 정보를 입력해주세요</div>
+        </div>
+      </div>
+      <div class="card-body">
+        <div class="field">
+          <label class="label">
+            <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/>
+            </svg>
+            API 토큰
+          </label>
+          <input type="password" class="input" id="notionToken" placeholder="ntn_xxxxxxxxxxxx" oninput="dirty=true">
+          <div class="hint">
+            <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <circle cx="12" cy="12" r="10"/><path d="M12 16v-4"/><path d="M12 8h.01"/>
+            </svg>
+            notion.so/my-integrations 에서 발급
+          </div>
+        </div>
+
+        <div class="field">
+          <label class="label">
+            <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/>
+              <path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/>
+            </svg>
+            데이터베이스 ID
+          </label>
+          <input type="text" class="input" id="notionDbId" placeholder="5d2ae356..." oninput="dirty=true">
+        </div>
+
+        <div class="field">
+          <label class="label">
+            <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <line x1="8" y1="6" x2="21" y2="6"/><line x1="8" y1="12" x2="21" y2="12"/>
+              <line x1="8" y1="18" x2="21" y2="18"/><line x1="3" y1="6" x2="3.01" y2="6"/>
+              <line x1="3" y1="12" x2="3.01" y2="12"/><line x1="3" y1="18" x2="3.01" y2="18"/>
+            </svg>
+            제품명 속성
+          </label>
+          <input type="text" class="input" id="propName" placeholder="제품명" oninput="dirty=true">
+        </div>
+
+        <button class="save-btn" id="saveBtn" onclick="saveSettings()">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/>
+            <polyline points="17 21 17 13 7 13 7 21"/>
+            <polyline points="7 3 7 8 15 8"/>
+          </svg>
+          설정 저장
+        </button>
+      </div>
+    </div>
+
+    <!-- 동기화 실행 -->
+    <div class="card">
+      <div class="card-header">
+        <div class="card-icon">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <polyline points="23 4 23 10 17 10"/>
+            <polyline points="1 20 1 14 7 14"/>
+            <path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"/>
+          </svg>
+        </div>
+        <div>
+          <div class="card-title">동기화</div>
+          <div class="card-sub">홈페이지 → 노션 이미지 교체</div>
+        </div>
+      </div>
+
+      <div class="stats">
+        <div class="stat">
+          <div class="stat-lbl">
+            <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/>
+            </svg>
+            마지막 실행
+          </div>
+          <div class="stat-val accent" id="lastRun">-</div>
+        </div>
+        <div class="stat">
+          <div class="stat-lbl">
+            <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <polyline points="20 6 9 17 4 12"/>
+            </svg>
+            성공
+          </div>
+          <div class="stat-val green" id="successCount">-</div>
+          <div class="stat-sub" id="totalCount"></div>
+        </div>
+      </div>
+
+      <!-- 진행바 -->
+      <div class="prog-wrap" id="progWrap">
+        <div class="prog-lbl">
+          <span id="progText">처리 중...</span>
+          <span id="progPct">0%</span>
+        </div>
+        <div class="prog-track">
+          <div class="prog-fill" id="progFill"></div>
+        </div>
+      </div>
+
+      <div class="sync-area">
+        <button class="sync-btn" id="syncBtn" onclick="startSync()">
+          <svg class="spin" id="spinIcon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+            <path d="M21 12a9 9 0 1 1-6.22-8.56"/>
+          </svg>
+          <svg class="icon-static" id="iconStatic" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+            <polyline points="23 4 23 10 17 10"/>
+            <polyline points="1 20 1 14 7 14"/>
+            <path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"/>
+          </svg>
+          <span id="btnText">지금 동기화 실행</span>
+        </button>
+        <div id="resultBadge"></div>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- ── 우측 ── -->
+  <div class="right-col">
+
+    <!-- 실행 로그 -->
+    <div class="card">
+      <div class="card-header">
+        <div class="card-icon">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <polyline points="4 17 10 11 4 5"/><line x1="12" y1="19" x2="20" y2="19"/>
+          </svg>
+        </div>
+        <div>
+          <div class="card-title">실행 로그</div>
+          <div class="card-sub">동기화 상세 기록</div>
+        </div>
+      </div>
+      <div class="log-box" id="logBox">
+        <span class="l-empty">▌ 동기화를 실행하면 여기에 로그가 표시됩니다.</span>
+      </div>
+    </div>
+
+    <!-- 처리 결과 -->
+    <div class="card">
+      <div class="card-header">
+        <div class="card-icon">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
+            <polyline points="14 2 14 8 20 8"/>
+            <line x1="16" y1="13" x2="8" y2="13"/>
+            <line x1="16" y1="17" x2="8" y2="17"/>
+          </svg>
+        </div>
+        <div>
+          <div class="card-title">처리 결과</div>
+          <div class="card-sub" id="resultSub">처리된 항목이 없습니다</div>
+        </div>
+      </div>
+      <div class="result-list" id="resultList">
+        <div class="r-empty">
+          <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+            <rect x="3" y="3" width="18" height="18" rx="2"/>
+            <path d="M9 9h6M9 12h6M9 15h4"/>
+          </svg>
+          동기화 실행 후 결과가 표시됩니다
+        </div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<script>
+let dirty = false, logs = [];
+
+// ── 설정 ──
+function saveSettings() {
+  const t = document.getElementById('notionToken').value.trim();
+  const d = document.getElementById('notionDbId').value.trim();
+  const p = document.getElementById('propName').value.trim() || '제품명';
+  localStorage.setItem('oz_t', t);
+  localStorage.setItem('oz_d', d);
+  localStorage.setItem('oz_p', p);
+  dirty = false;
+  chkBanner();
+  const b = document.getElementById('saveBtn');
+  b.classList.add('saved');
+  b.innerHTML = `<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg> 저장됨`;
+  setTimeout(() => {
+    b.classList.remove('saved');
+    b.innerHTML = `<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg> 설정 저장`;
+  }, 2000);
+}
+
+// ── 고정 설정값 (관리자가 여기에 입력) ──────────────────
+const FIXED_TOKEN = "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";
+const FIXED_DB_ID = "5d2ae3562c064494b6b1f0fc6469aa8a"; // 노션 DB ID
+const FIXED_PROP  = "제품명";                           // 제품명 속성
+// ──────────────────────────────────────────────────────
+
+function loadSettings() {
+  // 고정값이 있으면 고정값 사용, 없으면 localStorage 사용
+  const token = FIXED_TOKEN !== "여기에_노션_토큰_입력" ? FIXED_TOKEN : localStorage.getItem('oz_t') || '';
+  const dbId  = FIXED_DB_ID !== "" ? FIXED_DB_ID : localStorage.getItem('oz_d') || '';
+  const prop  = FIXED_PROP  !== "" ? FIXED_PROP  : localStorage.getItem('oz_p') || '제품명';
+  document.getElementById('notionToken').value = token;
+  document.getElementById('notionDbId').value  = dbId;
+  document.getElementById('propName').value    = prop;
+  // 고정값이 설정되어 있으면 설정 카드 숨김
+  if (FIXED_TOKEN !== "여기에_노션_토큰_입력" && FIXED_DB_ID !== "") {
+    const settingCard = document.getElementById('settingCard');
+    if (settingCard) settingCard.style.display = 'none';
+    document.getElementById('setupBanner').classList.add('hidden');
+  } else {
+    chkBanner();
+  }
+}
+
+function getS() {
+  const token = FIXED_TOKEN !== "여기에_노션_토큰_입력" ? FIXED_TOKEN : localStorage.getItem('oz_t') || '';
+  const dbId  = FIXED_DB_ID !== "" ? FIXED_DB_ID : localStorage.getItem('oz_d') || '';
+  const prop  = FIXED_PROP  !== "" ? FIXED_PROP  : localStorage.getItem('oz_p') || '제품명';
+  return { token, dbId, prop };
+}
+
+function chkBanner() {
+  const { token, dbId } = getS();
+  document.getElementById('setupBanner').classList.toggle('hidden', !!(token && dbId));
+}
+
+// ── 로그 ──
+function addLog(msg, type = 'l') {
+  const ts = new Date().toLocaleTimeString('ko-KR', { hour: '2-digit', minute: '2-digit', second: '2-digit' });
+  logs.push({ ts, msg, type });
+  const box = document.getElementById('logBox');
+  box.innerHTML = logs.map(l => `<div class="${l.type}"><span class="l-ts">${l.ts}</span>${esc(l.msg)}</div>`).join('');
+  box.scrollTop = box.scrollHeight;
+}
+
+function esc(t) { return t.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;'); }
+
+// ── 진행바 ──
+function setProgress(c, t) {
+  const pct = t > 0 ? Math.round(c / t * 100) : 0;
+  document.getElementById('progWrap').classList.add('show');
+  document.getElementById('progFill').style.width = pct + '%';
+  document.getElementById('progText').textContent = `${c} / ${t} 처리 중`;
+  document.getElementById('progPct').textContent = pct + '%';
+}
+
+// ── 크롤링 ──
+async function fetchProducts() {
+  addLog('오즈키즈 신상품 크롤링 중...', 'l-info');
+  const url = 'https://www.ozkiz.com/product/new_list.html?cate_no=142';
+  try {
+    const res = await fetch(`https://api.allorigins.win/get?url=${encodeURIComponent(url)}`);
+    const data = await res.json();
+    const doc = new DOMParser().parseFromString(data.contents, 'text/html');
+    const products = [], seen = new Set();
+    doc.querySelectorAll("li[id^='anchorBoxId_']").forEach(item => {
+      let name = '';
+      for (const img of item.querySelectorAll('img[alt]')) {
+        const alt = img.getAttribute('alt') || '';
+        if (alt.length > 2 && !alt.includes('할인가') && !alt.includes('장바구니')) { name = alt; break; }
+      }
+      let href = '';
+      for (const a of item.querySelectorAll('a[href]')) {
+        const h = a.getAttribute('href') || '';
+        if ((h.includes('/product/detail') || h.includes('product_no=')) && !h.includes('basket')) {
+          href = h.startsWith('http') ? h : 'https://www.ozkiz.com' + h; break;
+        }
+      }
+      if (name && href && !seen.has(href)) { seen.add(href); products.push({ name, url: href }); }
+    });
+    addLog(`신상품 ${products.length}개 크롤링 완료`, 'l-ok');
+    return products;
+  } catch (e) { addLog(`크롤링 오류: ${e.message}`, 'l-err'); return []; }
+}
+
+// ── 노션 검색 ──
+async function searchNotion(kw, token, dbId, prop) {
+  try {
+    const r = await fetch(`https://api.notion.com/v1/databases/${dbId}/query`, {
+      method: 'POST',
+      headers: { 'Authorization': `Bearer ${token}`, 'Notion-Version': '2022-06-28', 'Content-Type': 'application/json' },
+      body: JSON.stringify({ page_size: 10, filter: { property: prop, title: { contains: kw } } })
+    });
+    return (await r.json()).results || [];
+  } catch { return []; }
+}
+
+// ── 유사도 ──
+function norm(s) {
+  return s.replace(/^[가-힣]+[-_]/, '').replace(/\[.*?\]/g, '').replace(/^오즈키즈[,\s]*/, '').replace(/[\s\-_]/g, '').toLowerCase().trim();
+}
+function simScore(a, b) {
+  const na = norm(a), nb = norm(b);
+  if (!na || !nb) return 0;
+  const [sh, lo] = na.length <= nb.length ? [na, nb] : [nb, na];
+  if (lo.includes(sh)) {
+    const r = sh.length / lo.length;
+    if (lo.startsWith(sh)) return Math.max(r + 0.2, 0.75);
+    if (sh.length <= 3) return r * 0.5;
+    return r >= 0.6 ? Math.max(r, 0.85) : r;
+  }
+  let m = 0; const arr = [...nb];
+  for (const c of na) { const i = arr.indexOf(c); if (i !== -1) { m++; arr.splice(i, 1); } }
+  return (2 * m) / (na.length + nb.length);
+}
+function getName(page, prop) {
+  const p = page.properties?.[prop];
+  return (p?.title || p?.rich_text || []).map(t => t.plain_text || '').join('').trim();
+}
+
+// ── 이미지 업데이트 ──
+async function updateImage(pageId, imgUrl, token) {
+  const h = { 'Authorization': `Bearer ${token}`, 'Notion-Version': '2022-06-28', 'Content-Type': 'application/json' };
+  const br = await (await fetch(`https://api.notion.com/v1/blocks/${pageId}/children`, { headers: h })).json();
+  const imgs = (br.results || []).filter(b => b.type === 'image');
+  const body = { image: { type: 'external', external: { url: imgUrl } } };
+  if (imgs.length) {
+    await fetch(`https://api.notion.com/v1/blocks/${imgs[0].id}`, { method: 'PATCH', headers: h, body: JSON.stringify(body) });
+    return 'updated';
+  } else {
+    await fetch(`https://api.notion.com/v1/blocks/${pageId}/children`, { method: 'PATCH', headers: h, body: JSON.stringify({ children: [{ object: 'block', type: 'image', ...body }] }) });
+    return 'added';
+  }
+}
+
+// ── 메인 동기화 ──
+async function startSync() {
+  const { token, dbId, prop } = getS();
+  if (!token || !dbId) { alert('노션 설정을 먼저 저장해주세요!'); return; }
+
+  const btn = document.getElementById('syncBtn');
+  btn.disabled = true;
+  btn.classList.add('running');
+  document.getElementById('spinIcon').classList.add('show');
+  document.getElementById('iconStatic').classList.add('hide');
+  document.getElementById('btnText').textContent = '동기화 중...';
+  document.getElementById('resultBadge').innerHTML = `<div class="badge run"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="animation:spin .8s linear infinite"><path d="M21 12a9 9 0 1 1-6.22-8.56"/></svg>실행 중...</div>`;
+
+  logs = [];
+  addLog(`동기화 시작 — ${new Date().toLocaleString('ko-KR')}`, 'l-head');
+  addLog('', 'l');
+
+  let success = 0;
+  const results = [];
+
+  try {
+    const products = await fetchProducts();
+    if (!products.length) throw new Error('크롤링된 상품이 없습니다');
+
+    addLog(`총 ${products.length}개 처리 시작`, 'l-info');
+    addLog('', 'l');
+
+    for (let i = 0; i < products.length; i++) {
+      const p = products[i];
+      setProgress(i + 1, products.length);
+      const clean = p.name.replace(/^오즈키즈[,\s]*/, '').replace(/\[.*?\]/g, '').trim();
+      const kw = clean.split(' ')[0];
+      addLog(`▸ ${clean}`, 'l');
+
+      const cands = await searchNotion(kw, token, dbId, prop);
+      if (!cands.length) {
+        addLog(`  "${kw}" 검색 결과 없음`, 'l-warn');
+        results.push({ name: clean, status: 'skip', notion: '' });
+        await sl(200); continue;
+      }
+
+      let best = 0, bestPage = null;
+      for (const c of cands) { const s = simScore(p.name, getName(c, prop)); if (s > best) { best = s; bestPage = c; } }
+
+      if (best < 0.55 || !bestPage) {
+        addLog(`  매칭 실패 (${Math.round(best * 100)}%)`, 'l-warn');
+        results.push({ name: clean, status: 'skip', notion: '' });
+        await sl(200); continue;
+      }
+
+      const nName = getName(bestPage, prop);
+      addLog(`  → ${nName} (${Math.round(best * 100)}%)`, 'l-ok');
+
+      try {
+        const pg = await fetch(`https://api.allorigins.win/get?url=${encodeURIComponent(p.url)}`);
+        const pgData = await pg.json();
+        const ogMatch = pgData.contents.match(/<meta[^>]+property="og:image"[^>]+content="([^"]+)"/);
+        if (!ogMatch) throw new Error('이미지를 찾지 못했습니다');
+        const action = await updateImage(bestPage.id, ogMatch[1], token);
+        addLog(`  이미지 ${action === 'updated' ? '업데이트' : '추가'} 완료`, 'l-ok');
+        success++;
+        results.push({ name: clean, status: 'ok', notion: nName });
+      } catch (e) {
+        addLog(`  이미지 오류: ${e.message}`, 'l-err');
+        results.push({ name: clean, status: 'fail', notion: nName });
+      }
+      await sl(300);
+    }
+  } catch (e) { addLog(`오류: ${e.message}`, 'l-err'); }
+
+  addLog('', 'l');
+  addLog(`완료 — ${success}/${results.length}개 성공`, 'l-head');
+
+  renderResults(results, success);
+  document.getElementById('lastRun').textContent = new Date().toLocaleTimeString('ko-KR', { hour: '2-digit', minute: '2-digit' });
+  document.getElementById('successCount').textContent = success;
+  document.getElementById('totalCount').textContent = `/ ${results.length}`;
+  document.getElementById('progWrap').classList.remove('show');
+
+  btn.disabled = false;
+  btn.classList.remove('running');
+  document.getElementById('spinIcon').classList.remove('show');
+  document.getElementById('iconStatic').classList.remove('hide');
+  document.getElementById('btnText').textContent = '지금 동기화 실행';
+
+  const isOk = success > 0;
+  document.getElementById('resultBadge').innerHTML = `
+    <div class="badge ${isOk ? 'ok' : 'err'}">
+      <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+        ${isOk ? '<polyline points="20 6 9 17 4 12"/>' : '<circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/>'}
+      </svg>
+      ${isOk ? `${success}개 동기화 완료!` : '매칭된 상품이 없어요'}
+    </div>`;
+}
+
+function renderResults(results, success) {
+  document.getElementById('resultSub').textContent = `총 ${results.length}개 처리 — ${success}개 성공`;
+  const icons = {
+    ok: `<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>`,
+    fail: `<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>`,
+    skip: `<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 18 15 12 9 6"/></svg>`,
+  };
+  const labels = { ok: '완료', fail: '오류', skip: '스킵' };
+  if (!results.length) {
+    document.getElementById('resultList').innerHTML = `<div class="r-empty"><svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M9 9h6M9 12h6M9 15h4"/></svg>처리된 항목이 없습니다</div>`;
+    return;
+  }
+  document.getElementById('resultList').innerHTML = results.map(r => `
+    <div class="r-item">
+      <div class="r-icon ${r.status}">${icons[r.status]}</div>
+      <div class="r-name">${esc(r.name)}</div>
+      ${r.notion ? `<div class="r-notion">${esc(r.notion)}</div>` : ''}
+      <span class="r-tag ${r.status}">${labels[r.status]}</span>
+    </div>`).join('');
+}
+
+function sl(ms) { return new Promise(r => setTimeout(r, ms)); }
+loadSettings();
+</script>
+</body>
+</html>

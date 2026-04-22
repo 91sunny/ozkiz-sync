@@ -434,9 +434,12 @@
     </div>
     <span class="header-badge">Product Design</span>
   </div>
-  <div class="status-pill">
-    <div class="status-dot"></div>
-    자동 감시 중
+  <div style="display:flex;align-items:center;gap:10px;">
+    <div class="status-pill">
+      <div class="status-dot"></div>
+      자동 감시 중
+    </div>
+    <div style="font-size:11px;color:var(--text3);" id="autoStatus">페이지 로드 후 자동 실행</div>
   </div>
 </header>
 
@@ -660,7 +663,7 @@ function saveSettings() {
 }
 
 // ── 고정 설정값 (관리자가 여기에 입력) ──────────────────
-const FIXED_TOKEN = "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";
+const FIXED_TOKEN = "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";                               
 const FIXED_DB_ID = "5d2ae3562c064494b6b1f0fc6469aa8a"; // 노션 DB ID
 const FIXED_PROP  = "제품명";                           // 제품명 속성
 // ──────────────────────────────────────────────────────
@@ -912,6 +915,39 @@ function renderResults(results, success) {
 
 function sl(ms) { return new Promise(r => setTimeout(r, ms)); }
 loadSettings();
+
+// ── 자동 동기화 ──────────────────────────────────────
+const AUTO_INTERVAL_MIN = 30; // 30분마다 자동 실행
+let autoTimer = null;
+let lastAutoSync = null;
+
+function startAutoSync() {
+  if (autoTimer) clearInterval(autoTimer);
+  autoTimer = setInterval(async () => {
+    const now = new Date();
+    console.log(`[자동] ${now.toLocaleTimeString()} 자동 동기화 실행`);
+    lastAutoSync = now;
+    await startSync();
+  }, AUTO_INTERVAL_MIN * 60 * 1000);
+  updateAutoStatus();
+}
+
+function updateAutoStatus() {
+  const el = document.getElementById('autoStatus');
+  if (!el) return;
+  const next = new Date(Date.now() + AUTO_INTERVAL_MIN * 60 * 1000);
+  el.textContent = `다음 자동 실행: ${next.toLocaleTimeString('ko-KR', {hour:'2-digit', minute:'2-digit'})}`;
+}
+
+// 페이지 로드 후 자동 실행 시작
+window.addEventListener('load', () => {
+  // 페이지 열리자마자 즉시 1회 실행
+  setTimeout(() => startSync(), 2000);
+  // 이후 30분마다 자동 실행
+  startAutoSync();
+  // 1분마다 다음 실행 시간 업데이트
+  setInterval(updateAutoStatus, 60000);
+});
 </script>
 </body>
 </html>
